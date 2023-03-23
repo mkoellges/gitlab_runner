@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    logging:
+      driver: json-file
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config:/etc/gitlab-runner
+    networks:
+      - gitlab-runner
+#    environment:
+    restart: always
+
+networks:
+  gitlab-runner:

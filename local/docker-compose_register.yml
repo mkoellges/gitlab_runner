@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    logging:
+      driver: json-file
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config:/etc/gitlab-runner
+    networks:
+      - gitlab-runner
+    environment:
+      - CI_SERVER_URL=https://gitlab.ista.net/
+      - RUNNER_NAME=${RUNNER_NAME:?err}
+      - Privileged=true  
+      - RUNNER_TAG_LIST=${TAG_LIST:?err}
+      - REGISTRATION_TOKEN=${TOKEN:?err}
+      - REGISTER_MAXIMUM_TIMEOUT=${TIMEOUT:-21600}
+      - REGISTER_NON_INTERACTIVE=true
+      - REGISTER_RUN_UNTAGGED/*-=false
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:latest
+      - DOCKER_VOLUMES=/var/run/docker.sock:/var/run/docker.sock
+      - RUNNER_REQUEST_CONCURRENCY=10
+      - DOCKER_HOSTNAME=${RUNNER_NAME} #  Custom container hostname [$DOCKER_HOSTNAME]
+      - DOCKER_MEMORY=6G # Memory limit (format: <number>[<unit>]). Unit can be one of b, k, m, or g. Minimum is 4M. [$DOCKER_MEMORY]
+      - DOCKER_MEMORY_SWAP=6G # Total memory limit (memory + swap, format: <number>[<unit>]). Unit can be one of b, k, m, or g. [$DOCKER_MEMORY_SWAP]
+      - DOCKER_MEMORY_RESERVATION=2G # Memory soft limit (format: <number>[<unit>]). Unit can be one of b, k, m, or g. [$DOCKER_MEMORY_RESERVATION]
+      - DOCKER_CPUSET_CPUS=0-3 # String value containing the cgroups CpusetCpus to use [$DOCKER_CPUSET_CPUS]
+        #- DOCKER_SHM_SIZE=2000000  #Shared memory size for docker images (in bytes)
+    entrypoint:
+      - /usr/bin/dumb-init
+    command: 
+      - sh
+      - -c 
+      - |
+        env
+        set -e
+        #        cat /etc/gitlab-runner/config.toml
+        #sed -i "s/concurrent = 1.*/concurrent = $${RUNNER_REQUEST_CONCURRENCY}/g" /etc/gitlab-runner/config.toml
+        gitlab-runner register
+    restart: always
+
+networks:
+  gitlab-runner:

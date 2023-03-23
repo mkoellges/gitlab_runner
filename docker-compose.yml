@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    logging:
+      driver: json-file
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+     # - /srv/gitlab-runner/config.toml:/etc/gitlab-runner/config.toml
+    networks:
+      - gitlab-runner
+    environment:
+      - CI_SERVER_URL=${SERVER_URL:?err}
+      - RUNNER_NAME=${RUNNER_NAME:?err}
+      #- http_proxy=${http_proxy?err}
+      #- https_proxy=${https_proxy?err}
+      #- HTTP_PROXY=${http_proxy?err}
+      #- HTTPS_PROXY=${https_proxy?err}
+      #- NO_PROXY=${no_proxy?err}
+      #- no_proxy=${no_proxy?err} 
+      #- Privileged=true  
+      - RUNNER_TAG_LIST=${TAG_LIST:?err}
+      - REGISTRATION_TOKEN=${TOKEN:?err}
+      - REGISTER_MAXIMUM_TIMEOUT=${TIMEOUT:-21600}
+      - REGISTER_NON_INTERACTIVE=true
+      - REGISTER_RUN_UNTAGGED/*-=false
+      - RUNNER_EXECUTOR=docker
+      - DOCKER_IMAGE=docker:latest
+      - DOCKER_VOLUMES=/var/run/docker.sock:/var/run/docker.sock
+      - RUNNER_REQUEST_CONCURRENCY=10
+      - DOCKER_HOSTNAME=${RUNNER_NAME} #  Custom container hostname [$DOCKER_HOSTNAME]
+      - DOCKER_MEMORY=6G # Memory limit (format: <number>[<unit>]). Unit can be one of b, k, m, or g. Minimum is 4M. [$DOCKER_MEMORY]
+      - DOCKER_MEMORY_SWAP=6G # Total memory limit (memory + swap, format: <number>[<unit>]). Unit can be one of b, k, m, or g. [$DOCKER_MEMORY_SWAP]
+      - DOCKER_MEMORY_RESERVATION=2G # Memory soft limit (format: <number>[<unit>]). Unit can be one of b, k, m, or g. [$DOCKER_MEMORY_RESERVATION]
+      - DOCKER_CPUSET_CPUS=0-3 # String value containing the cgroups CpusetCpus to use [$DOCKER_CPUSET_CPUS]
+        #- DOCKER_SHM_SIZE=2000000  #Shared memory size for docker images (in bytes)
+    entrypoint:
+      - /usr/bin/dumb-init
+    command: 
+      - sh
+      - -c 
+      - |
+        env
+        set -e
+        #        cat /etc/gitlab-runner/config.toml
+        #sed -i "s/concurrent = 1.*/concurrent = $${RUNNER_REQUEST_CONCURRENCY}/g" /etc/gitlab-runner/config.toml
+        gitlab-runner register
+        #        awk '/executor/ { print; print "  environment = [\"https_proxy=${https_proxy}\", \"http_proxy=${http_proxy}\", \"no_proxy=${no_proxy}\", \"HTTPS_PROXY=${HTTPS_PROXY}\", \"HTTP_PROXY=${HTTP_PROXY}\", \"NO_PROXY=${NO_PROXY}\"]"; next }1' /etc/gitlab-runner/config.toml > /tmp/config.toml
+        #  mv /tmp/config.toml  /etc/gitlab-runner/config.toml
+        #cat /etc/gitlab-runner/config.toml
+        #sed -i 's/privileged =.*/privileged = true/' /etc/gitlab-runner/config.toml
+        /entrypoint run --user=gitlab-runner --working-directory=/home/gitlab-runner
+        # awk '/executor/ { print; print "  pre_build_script = \"mkdir -p $HOME/.docker/ && echo \\\"{ \\\"proxies\\\": { \\\"default\\\": { \\\"httpProxy\\\": \\\"$HTTP_PROXY\\\", \\\"httpsProxy\\\": \\\"$HTTPS_PROXY\\\", \\\"noProxy\\\": \\\"$NO_PROXY\\\" } } }\" > $HOME/.docker/config.json\" "; next }1' /tmp/config.toml > /tmp/config.toml
+#awk '/executor/ { print; print "  pre_build_script =  "; next }1' /tmp/config.toml > /tmp/config.toml
+    restart: always
+
+networks:
+  gitlab-runner:

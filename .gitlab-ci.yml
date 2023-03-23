@@ -1,0 +1,7 @@
+image: gitlab.ista.net:5005/cicd/docker/gitlab_deploy_container
+
+stages:
+  - deploy
+
+include:
+  - local: '/gitlab-ci/deploy_runner.yml'
