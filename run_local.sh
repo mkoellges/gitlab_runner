@@ -6,7 +6,7 @@
 SERVER_URL="https://gitlab.com/"
 export SERVER_URL
 # TOKEN=$(pass gitlab.ista.com/runner_token_cicd_deployments_tools_harbor)
-TOKEN=$(pass gitlab.con/aks_runner_token)
+TOKEN=$(pass gitlab.com/GITLAB_TOKEN)
 export TOKEN
 
 HOSTNAME=$(hostname)
@@ -14,7 +14,7 @@ USER=$(whoami)
 export RUNNER_NAME="localtest - ${USER} - ${HOSTNAME}"
 export TAG_LIST="isdp-runner"
 
-docker-compose ps 
+docker-compose ps
 docker compose up -d
 docker-compose ps
 
