@@ -6,7 +6,7 @@
 SERVER_URL="https://gitlab.com/"
 export SERVER_URL
 # TOKEN=$(pass gitlab.ista.com/runner_token_cicd_deployments_tools_harbor)
-TOKEN=$(pass gitlab.com/GITLAB_TOKEN)
+TOKEN=$(pass gitlab.con/aks_runner_token)
 export TOKEN
 
 HOSTNAME=$(hostname)
