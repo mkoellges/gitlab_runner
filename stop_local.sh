@@ -14,8 +14,6 @@ USER=$(whoami)
 export RUNNER_NAME="localtest - ${USER} - ${HOSTNAME}"
 export TAG_LIST="isdp-runner"
 
-docker-compose ps 
-docker compose up -d
 docker-compose ps
-
-# docker compose down
+docker compose down
+docker-compose ps
